@@ -1,0 +1,87 @@
+---
+title: "安装"
+description: "在不同平台上安装 skills-ref"
+---
+
+skills-ref 可以通过 pip 或 uv 安装。安装后，`skills-ref` 可执行文件将在激活的虚拟环境中可用。
+
+## macOS / Linux
+
+<Tabs>
+  <Tab title="使用 pip">
+    创建虚拟环境并安装：
+
+    ```bash
+    python -m venv .venv
+    source .venv/bin/activate
+    pip install -e .
+    ```
+  </Tab>
+  <Tab title="使用 uv">
+    使用 [uv](https://docs.astral.sh/uv/) 进行安装：
+
+    ```bash
+    uv sync
+    source .venv/bin/activate
+    ```
+  </Tab>
+</Tabs>
+
+## Windows
+
+<Tabs>
+  <Tab title="PowerShell">
+    使用 pip:
+
+    ```powershell
+    python -m venv .venv
+    .venv\Scripts\Activate.ps1
+    pip install -e .
+    ```
+
+    或使用 [uv](https://docs.astral.sh/uv/):
+
+    ```powershell
+    uv sync
+    .venv\Scripts\Activate.ps1
+    ```
+  </Tab>
+  <Tab title="命令提示符">
+    使用 pip:
+
+    ```cmd
+    python -m venv .venv
+    .venv\Scripts\activate.bat
+    pip install -e .
+    ```
+  </Tab>
+</Tabs>
+
+## 验证安装
+
+安装完成后，验证 `skills-ref` 是否可用：
+
+```bash
+skills-ref --version
+```
+
+您应该看到版本号输出。现在可以使用所有 CLI 命令了：
+
+```bash
+# 查看可用命令
+skills-ref --help
+
+# 验证技能
+skills-ref validate path/to/skill
+```
+
+<Note>
+确保在运行 `skills-ref` 命令之前已激活虚拟环境。
+</Note>
+
+## 下一步
+
+- 了解 [validate](/reference/cli/validate) 命令
+- 了解 [read-properties](/reference/cli/read-properties) 命令
+- 了解 [to-prompt](/reference/cli/to-prompt) 命令
+- 探索 [Python API](/reference/api/validate)

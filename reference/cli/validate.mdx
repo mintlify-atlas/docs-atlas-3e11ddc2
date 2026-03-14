@@ -1,0 +1,79 @@
+---
+title: "validate"
+description: "验证技能目录是否符合规范"
+---
+
+`validate` 命令检查技能目录是否具有有效的 SKILL.md 文件、正确的 frontmatter、命名规范和必需字段。
+
+## 用法
+
+```bash
+skills-ref validate <skill_path>
+```
+
+### 参数
+
+<ParamField path="skill_path" type="Path" required>
+  技能目录的路径。也可以直接指向 SKILL.md 文件。
+</ParamField>
+
+## 验证检查
+
+validate 命令执行以下检查：
+
+1. **文件存在性**：验证 SKILL.md（或 skill.md）文件是否存在
+2. **YAML frontmatter**：检查文件是否以有效的 YAML frontmatter 开始
+3. **必需字段**：确保存在 `name` 和 `description` 字段
+4. **命名规范**：
+   - 技能名称必须为小写
+   - 只能包含字母、数字和连字符
+   - 不能以连字符开始或结束
+   - 不能包含连续的连字符
+   - 不能超过 64 个字符
+5. **目录匹配**：目录名称必须与技能名称匹配
+6. **字段长度**：
+   - description 不能超过 1024 个字符
+   - compatibility 不能超过 500 个字符
+7. **允许的字段**：只允许规范中定义的字段（name、description、license、allowed-tools、metadata、compatibility）
+
+## 退出码
+
+<ResponseField name="0" type="int">
+  技能有效
+</ResponseField>
+
+<ResponseField name="1" type="int">
+  发现验证错误
+</ResponseField>
+
+## 示例
+
+### 验证有效的技能
+
+```bash
+$ skills-ref validate ./my-skill
+Valid skill: ./my-skill
+```
+
+### 验证失败的情况
+
+```bash
+$ skills-ref validate ./broken-skill
+Validation failed for ./broken-skill:
+  - Missing required field in frontmatter: name
+  - Description exceeds 1024 character limit (1250 chars)
+```
+
+### 直接指向 SKILL.md 文件
+
+```bash
+$ skills-ref validate ./my-skill/SKILL.md
+Valid skill: ./my-skill
+```
+
+命令会自动识别出这是一个 SKILL.md 文件，并验证其父目录。
+
+## 相关命令
+
+- [read-properties](/reference/cli/read-properties) - 读取技能属性
+- [Python API: validate()](/reference/api/validate) - 编程方式验证技能

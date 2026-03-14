@@ -1,0 +1,172 @@
+---
+title: "read_properties"
+description: "读取技能属性的 Python 函数"
+---
+
+`read_properties()` 函数从 SKILL.md 的 YAML frontmatter 中读取技能属性。
+
+## 函数签名
+
+```python
+def read_properties(skill_dir: Path) -> SkillProperties
+```
+
+### 参数
+
+<ParamField path="skill_dir" type="Path" required>
+  技能目录的路径（`pathlib.Path` 对象）
+</ParamField>
+
+### 返回值
+
+<ResponseField name="返回值" type="SkillProperties">
+  包含解析后的技能属性的 `SkillProperties` 对象
+</ResponseField>
+
+### 异常
+
+<ResponseField name="ParseError" type="Exception">
+  如果 SKILL.md 缺失或包含无效的 YAML
+</ResponseField>
+
+<ResponseField name="ValidationError" type="Exception">
+  如果缺少必需字段（name 或 description）
+</ResponseField>
+
+## 导入
+
+```python
+from pathlib import Path
+from skills_ref import read_properties
+```
+
+## 使用示例
+
+### 基本用法
+
+```python
+from pathlib import Path
+from skills_ref import read_properties
+
+# 读取技能属性
+props = read_properties(Path("my-skill"))
+print(f"技能: {props.name} - {props.description}")
+```
+
+### 访问所有属性
+
+```python
+from pathlib import Path
+from skills_ref import read_properties
+
+props = read_properties(Path("./pdf-reader"))
+
+print(f"名称: {props.name}")
+print(f"描述: {props.description}")
+print(f"许可证: {props.license}")
+print(f"兼容性: {props.compatibility}")
+print(f"允许的工具: {props.allowed_tools}")
+print(f"元数据: {props.metadata}")
+```
+
+### 转换为字典
+
+```python
+from pathlib import Path
+from skills_ref import read_properties
+import json
+
+props = read_properties(Path("./my-skill"))
+
+# 转换为字典（排除 None 值）
+props_dict = props.to_dict()
+print(json.dumps(props_dict, indent=2))
+```
+
+### 错误处理
+
+```python
+from pathlib import Path
+from skills_ref import read_properties
+from skills_ref.errors import ParseError, ValidationError
+
+try:
+    props = read_properties(Path("./my-skill"))
+    print(f"成功读取技能: {props.name}")
+except ParseError as e:
+    print(f"解析错误: {e}")
+except ValidationError as e:
+    print(f"验证错误: {e}")
+```
+
+### 批量读取技能
+
+```python
+from pathlib import Path
+from skills_ref import read_properties
+
+skills_dir = Path("./skills")
+all_skills = []
+
+for skill_path in skills_dir.iterdir():
+    if skill_path.is_dir():
+        try:
+            props = read_properties(skill_path)
+            all_skills.append(props)
+        except Exception as e:
+            print(f"跳过 {skill_path.name}: {e}")
+
+for skill in all_skills:
+    print(f"- {skill.name}: {skill.description}")
+```
+
+### 检查可选字段
+
+```python
+from pathlib import Path
+from skills_ref import read_properties
+
+props = read_properties(Path("./my-skill"))
+
+# 检查可选字段是否存在
+if props.license:
+    print(f"许可证: {props.license}")
+
+if props.metadata:
+    print("元数据:")
+    for key, value in props.metadata.items():
+        print(f"  {key}: {value}")
+```
+
+## 与验证的区别
+
+<Note>
+`read_properties()` 执行最小验证（仅检查必需字段存在）。如需完整验证，请使用 [validate()](/reference/api/validate) 函数。
+</Note>
+
+```python
+from pathlib import Path
+from skills_ref import validate, read_properties
+
+skill_dir = Path("./my-skill")
+
+# 完整验证
+errors = validate(skill_dir)
+if errors:
+    print("验证失败:", errors)
+    exit(1)
+
+# 读取属性（已知有效）
+props = read_properties(skill_dir)
+print(f"技能: {props.name}")
+```
+
+## 相关函数
+
+- [SkillProperties](/reference/api/models) - 返回的数据模型
+- [validate()](/reference/api/validate) - 完整的技能验证
+- [CLI: read-properties](/reference/cli/read-properties) - 命令行工具
+
+## 源代码位置
+
+`~/workspace/source/skills-ref/src/skills_ref/parser.py:67`

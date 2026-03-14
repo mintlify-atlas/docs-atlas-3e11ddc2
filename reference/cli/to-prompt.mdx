@@ -1,0 +1,169 @@
+---
+title: "to-prompt"
+description: "生成用于代理提示的 <available_skills> XML"
+---
+
+`to-prompt` 命令生成适用于代理系统提示的 `<available_skills>` XML 块。此格式推荐用于 Anthropic 的 Claude 模型。
+
+## 用法
+
+```bash
+skills-ref to-prompt <skill_path>...
+```
+
+### 参数
+
+<ParamField path="skill_paths" type="Path" required>
+  一个或多个技能目录的路径。可以传递多个路径以生成包含多个技能的 XML 块。也可以直接指向 SKILL.md 文件。
+</ParamField>
+
+## 退出码
+
+<ResponseField name="0" type="int">
+  成功生成 XML
+</ResponseField>
+
+<ResponseField name="1" type="int">
+  错误（例如：技能路径无效或 SKILL.md 缺失）
+</ResponseField>
+
+## 输出格式
+
+生成的 XML 格式如下：
+
+```xml
+<available_skills>
+<skill>
+<name>
+技能名称
+</name>
+<description>
+技能描述
+</description>
+<location>
+/绝对/路径/到/SKILL.md
+</location>
+</skill>
+</available_skills>
+```
+
+### XML 元素
+
+<ResponseField name="name" type="string">
+  技能的名称（来自 SKILL.md frontmatter）
+</ResponseField>
+
+<ResponseField name="description" type="string">
+  技能的功能描述和使用时机（来自 SKILL.md frontmatter）
+</ResponseField>
+
+<ResponseField name="location" type="string">
+  SKILL.md 文件的绝对路径，代理可以读取完整的技能说明
+</ResponseField>
+
+## 示例
+
+### 单个技能
+
+```bash
+$ skills-ref to-prompt ./pdf-reader
+<available_skills>
+<skill>
+<name>
+pdf-reader
+</name>
+<description>
+Read and extract text from PDF files
+</description>
+<location>
+/home/user/skills/pdf-reader/SKILL.md
+</location>
+</skill>
+</available_skills>
+```
+
+### 多个技能
+
+```bash
+$ skills-ref to-prompt ./pdf-reader ./web-scraper ./data-analyzer
+<available_skills>
+<skill>
+<name>
+pdf-reader
+</name>
+<description>
+Read and extract text from PDF files
+</description>
+<location>
+/home/user/skills/pdf-reader/SKILL.md
+</location>
+</skill>
+<skill>
+<name>
+web-scraper
+</name>
+<description>
+Extract content from web pages
+</description>
+<location>
+/home/user/skills/web-scraper/SKILL.md
+</location>
+</skill>
+<skill>
+<name>
+data-analyzer
+</name>
+<description>
+Analyze and visualize data sets
+</description>
+<location>
+/home/user/skills/data-analyzer/SKILL.md
+</location>
+</skill>
+</available_skills>
+```
+
+### 重定向到文件
+
+```bash
+# 将输出保存到文件
+$ skills-ref to-prompt ./skill-a ./skill-b > available_skills.xml
+```
+
+### 在代理提示中使用
+
+生成的 XML 可以直接嵌入到代理的系统提示中：
+
+```python
+import subprocess
+
+# 生成可用技能 XML
+result = subprocess.run(
+    ["skills-ref", "to-prompt", "./skill-a", "./skill-b"],
+    capture_output=True,
+    text=True
+)
+available_skills_xml = result.stdout
+
+# 构建系统提示
+system_prompt = f"""
+You are an AI assistant with access to specialized skills.
+
+{available_skills_xml}
+
+When a task requires a skill, use the skill tool to load the full instructions.
+"""
+```
+
+## 使用说明
+
+<Note>
+此 XML 格式是 Anthropic 为 Claude 模型推荐的格式。技能客户端可以根据所使用的模型或偏好选择不同的格式。
+</Note>
+
+`<location>` 元素告诉代理在需要使用技能时，可以在哪里找到完整的技能说明（SKILL.md 的完整内容）。
+
+## 相关命令
+
+- [Python API: to_prompt()](/reference/api/to-prompt) - 编程方式生成提示
+- [read-properties](/reference/cli/read-properties) - 读取技能属性

@@ -1,0 +1,225 @@
+---
+title: "数据模型"
+description: "skills-ref 使用的数据结构"
+---
+
+`SkillProperties` 是一个 dataclass，表示从技能的 SKILL.md frontmatter 中解析的属性。
+
+## SkillProperties
+
+### 定义
+
+```python
+@dataclass
+class SkillProperties:
+    """Properties parsed from a skill's SKILL.md frontmatter."""
+    
+    name: str
+    description: str
+    license: Optional[str] = None
+    compatibility: Optional[str] = None
+    allowed_tools: Optional[str] = None
+    metadata: dict[str, str] = field(default_factory=dict)
+```
+
+### 字段
+
+<ParamField path="name" type="str" required>
+  技能名称，kebab-case 格式（例如：`pdf-reader`）
+</ParamField>
+
+<ParamField path="description" type="str" required>
+  技能的功能描述以及模型应该在何时使用它
+</ParamField>
+
+<ParamField path="license" type="Optional[str]">
+  技能的许可证（例如：`MIT`、`Apache-2.0`）
+</ParamField>
+
+<ParamField path="compatibility" type="Optional[str]">
+  技能的兼容性信息（例如：`Requires Python 3.8+`）
+</ParamField>
+
+<ParamField path="allowed_tools" type="Optional[str]">
+  技能需要的工具模式（可选，实验性功能）
+</ParamField>
+
+<ParamField path="metadata" type="dict[str, str]">
+  客户端特定属性的键值对。默认为空字典，在 `to_dict()` 输出中为空时会被省略。
+</ParamField>
+
+## 方法
+
+### to_dict()
+
+将 `SkillProperties` 转换为字典，排除 `None` 值。
+
+```python
+def to_dict(self) -> dict
+```
+
+#### 返回值
+
+<ResponseField name="返回值" type="dict">
+  包含非 None 字段的字典。`allowed_tools` 在字典中使用键名 `allowed-tools`（带连字符）。
+</ResponseField>
+
+## 导入
+
+```python
+from skills_ref.models import SkillProperties
+```
+
+## 使用示例
+
+### 创建 SkillProperties 实例
+
+```python
+from skills_ref.models import SkillProperties
+
+# 手动创建（通常不需要，使用 read_properties() 代替）
+props = SkillProperties(
+    name="pdf-reader",
+    description="Read and extract text from PDF files",
+    license="Apache-2.0"
+)
+
+print(props.name)  # "pdf-reader"
+print(props.license)  # "Apache-2.0"
+```
+
+### 从技能读取（推荐方式）
+
+```python
+from pathlib import Path
+from skills_ref import read_properties
+
+# read_properties() 返回 SkillProperties 实例
+props = read_properties(Path("./my-skill"))
+
+print(f"技能: {props.name}")
+print(f"描述: {props.description}")
+```
+
+### 转换为字典
+
+```python
+from pathlib import Path
+from skills_ref import read_properties
+import json
+
+props = read_properties(Path("./pdf-reader"))
+
+# 转换为字典
+data = props.to_dict()
+print(json.dumps(data, indent=2))
+```
+
+**输出示例：**
+
+```json
+{
+  "name": "pdf-reader",
+  "description": "Read and extract text from PDF files",
+  "license": "Apache-2.0"
+}
+```
+
+### 访问元数据
+
+```python
+from pathlib import Path
+from skills_ref import read_properties
+
+props = read_properties(Path("./my-skill"))
+
+# 检查元数据
+if props.metadata:
+    print("元数据:")
+    for key, value in props.metadata.items():
+        print(f"  {key}: {value}")
+else:
+    print("无元数据")
+```
+
+### 检查可选字段
+
+```python
+from pathlib import Path
+from skills_ref import read_properties
+
+props = read_properties(Path("./my-skill"))
+
+# 检查可选字段
+if props.license:
+    print(f"许可证: {props.license}")
+else:
+    print("未指定许可证")
+
+if props.compatibility:
+    print(f"兼容性: {props.compatibility}")
+
+if props.allowed_tools:
+    print(f"允许的工具: {props.allowed_tools}")
+```
+
+### 字段命名映射
+
+注意 `allowed_tools` 字段在 Python 中使用下划线，但在字典和 YAML 中使用连字符：
+
+```python
+from pathlib import Path
+from skills_ref import read_properties
+
+props = read_properties(Path("./my-skill"))
+
+# Python 中：使用下划线
+print(props.allowed_tools)
+
+# 字典中：使用连字符
+data = props.to_dict()
+print(data.get("allowed-tools"))
+```
+
+### 完整示例
+
+```python
+from pathlib import Path
+from skills_ref import read_properties
+from skills_ref.models import SkillProperties
+
+# 读取技能属性
+props: SkillProperties = read_properties(Path("./pdf-reader"))
+
+# 访问所有字段
+print(f"名称: {props.name}")
+print(f"描述: {props.description}")
+print(f"许可证: {props.license or '未指定'}")
+print(f"兼容性: {props.compatibility or '未指定'}")
+print(f"允许的工具: {props.allowed_tools or '未指定'}")
+
+if props.metadata:
+    print("\n元数据:")
+    for k, v in props.metadata.items():
+        print(f"  {k}: {v}")
+
+# 转换为字典用于序列化
+import json
+print("\nJSON 输出:")
+print(json.dumps(props.to_dict(), indent=2, ensure_ascii=False))
+```
+
+## 字段验证
+
+<Note>
+`SkillProperties` 是一个简单的数据容器，不执行验证。验证由 [validate()](/reference/api/validate) 函数处理。
+</Note>
+
+## 相关函数
+
+- [read_properties()](/reference/api/read-properties) - 返回 `SkillProperties` 实例
+- [validate()](/reference/api/validate) - 验证技能属性
+
+## 源代码位置
+
+`~/workspace/source/skills-ref/src/skills_ref/models.py:8`

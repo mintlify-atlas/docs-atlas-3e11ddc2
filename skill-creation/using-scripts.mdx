@@ -1,0 +1,298 @@
+---
+title: "在技能中使用脚本"
+sidebarTitle: "使用脚本"
+description: "如何运行命令并在技能中捆绑可执行脚本。"
+---
+
+技能可以指示智能体运行 shell 命令并在 `scripts/` 目录中捆绑可重用的脚本。本指南涵盖一次性命令、具有自己依赖项的自包含脚本，以及如何为智能体使用设计脚本接口。
+
+## 一次性命令
+
+当现有包已经完成你需要的工作时，你可以直接在 `SKILL.md` 指令中引用它，而无需 `scripts/` 目录。许多生态系统提供在运行时自动解析依赖项的工具。
+
+<Tabs sync={false}>
+  <Tab title="uvx">
+    [uvx](https://docs.astral.sh/uv/guides/tools/) 在具有积极缓存的隔离环境中运行 Python 包。它随 [uv](https://docs.astral.sh/uv/) 一起提供。
+
+    ```bash
+    uvx ruff@0.8.0 check .
+    uvx black@24.10.0 .
+    ```
+
+    - 不与 Python 捆绑——需要单独安装。
+    - 快速。积极缓存，因此重复运行几乎是即时的。
+  </Tab>
+  <Tab title="pipx">
+    [pipx](https://pipx.pypa.io/) 在隔离环境中运行 Python 包。通过操作系统包管理器可用（`apt install pipx`、`brew install pipx`）。
+
+    ```bash
+    pipx run 'black==24.10.0' .
+    pipx run 'ruff==0.8.0' check .
+    ```
+
+    - 不与 Python 捆绑——需要单独安装。
+    - `uvx` 的成熟替代品。虽然 `uvx` 已成为标准推荐，但 `pipx` 仍然是一个可靠的选项，具有更广泛的操作系统包管理器可用性。
+  </Tab>
+  <Tab title="npx">
+    [npx](https://docs.npmjs.com/cli/commands/npx) 运行 npm 包，按需下载它们。它随 npm（随 Node.js 一起提供）一起提供。
+
+    ```bash
+    npx eslint@9 --fix .
+    npx create-vite@6 my-app
+    ```
+
+    - 与 Node.js 捆绑——不需要额外安装。
+    - 下载包，运行它，并缓存它以供将来使用。
+    - 使用 `npx package@version` 固定版本以实现可重复性。
+  </Tab>
+  <Tab title="bunx">
+    [bunx](https://bun.sh/docs/cli/bunx) 是 Bun 的 `npx` 等价物。它随 [Bun](https://bun.sh/) 一起提供。
+
+    ```bash
+    bunx eslint@9 --fix .
+    bunx create-vite@6 my-app
+    ```
+
+    - 在基于 Bun 的环境中直接替代 `npx`。
+    - 仅当用户的环境有 Bun 而不是 Node.js 时才合适。
+  </Tab>
+  <Tab title="deno run">
+    [deno run](https://docs.deno.com/runtime/reference/cli/run/) 直接从 URL 或说明符运行脚本。它随 [Deno](https://deno.com/) 一起提供。
+
+    ```bash
+    deno run npm:create-vite@6 my-app
+    deno run --allow-read npm:eslint@9 -- --fix .
+    ```
+
+    - 文件系统/网络访问需要权限标志（`--allow-read` 等）。
+    - 使用 `--` 将 Deno 标志与工具自己的标志分开。
+  </Tab>
+  <Tab title="go run">
+    [go run](https://pkg.go.dev/cmd/go#hdr-Compile_and_run_Go_program) 直接编译和运行 Go 包。它内置在 `go` 命令中。
+
+    ```bash
+    go run golang.org/x/tools/cmd/goimports@v0.28.0 .
+    go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.62.0 run
+    ```
+
+    - 内置于 Go——不需要额外的工具。
+    - 固定版本或使用 `@latest` 使命令明确。
+  </Tab>
+</Tabs>
+
+**技能中一次性命令的提示：**
+
+- **固定版本**（例如，`npx eslint@9.0.0`），以便命令随时间的行为保持一致。
+- **在 `SKILL.md` 中声明先决条件**（例如，"需要 Node.js 18+"），而不是假设智能体的环境有它们。对于运行时级别的要求，使用 [`compatibility` 前置元数据字段](/specification#compatibility-field)。
+- **将复杂命令移入脚本。** 当你调用一个带有几个标志的工具时，一次性命令效果很好。当命令变得足够复杂以至于第一次就很难正确时，`scripts/` 中经过测试的脚本更可靠。
+
+## 从 `SKILL.md` 引用脚本
+
+使用**相对于技能目录根的相对路径**来引用捆绑的文件。智能体自动解析这些路径——不需要绝对路径。
+
+在你的 `SKILL.md` 中列出可用的脚本，以便智能体知道它们存在：
+
+```markdown SKILL.md
+## 可用脚本
+
+- **`scripts/validate.sh`** — 验证配置文件
+- **`scripts/process.py`** — 处理输入数据
+```
+
+然后指示智能体运行它们：
+
+````markdown SKILL.md
+## 工作流
+
+1. 运行验证脚本：
+   ```bash
+   bash scripts/validate.sh "$INPUT_FILE"
+   ```
+
+2. 处理结果：
+   ```bash
+   python3 scripts/process.py --input results.json
+   ```
+````
+
+<Note>
+相同的相对路径约定适用于像 `references/*.md` 这样的支持文件——脚本执行路径（在代码块中）相对于**技能目录根**，因为智能体从那里运行命令。
+</Note>
+
+## 自包含脚本
+
+当你需要可重用的逻辑时，在 `scripts/` 中捆绑一个声明自己依赖项的脚本。智能体可以使用单个命令运行脚本——不需要单独的清单文件或安装步骤。
+
+几种语言支持内联依赖声明：
+
+<Tabs sync={false}>
+  <Tab title="Python">
+    [PEP 723](https://peps.python.org/pep-0723/) 定义了内联脚本元数据的标准格式。在 `# ///` 标记内的 TOML 块中声明依赖项：
+
+    ```python scripts/extract.py
+    # /// script
+    # dependencies = [
+    #   "beautifulsoup4",
+    # ]
+    # ///
+
+    from bs4 import BeautifulSoup
+
+    html = '<html><body><h1>Welcome</h1><p class="info">This is a test.</p></body></html>'
+    print(BeautifulSoup(html, "html.parser").select_one("p.info").get_text())
+    ```
+
+    使用 [uv](https://docs.astral.sh/uv/) 运行（推荐）：
+
+    ```bash
+    uv run scripts/extract.py
+    ```
+
+    `uv run` 创建一个隔离环境，安装声明的依赖项，并运行脚本。[pipx](https://pipx.pypa.io/)（`pipx run scripts/extract.py`）也支持 PEP 723。
+
+    - 使用 [PEP 508](https://peps.python.org/pep-0508/) 说明符固定版本：`"beautifulsoup4>=4.12,<5"`。
+    - 使用 `requires-python` 约束 Python 版本。
+    - 使用 `uv lock --script` 创建锁文件以实现完全可重复性。
+  </Tab>
+  <Tab title="Deno">
+    Deno 的 `npm:` 和 `jsr:` 导入说明符默认使每个脚本自包含：
+
+    ```typescript scripts/extract.ts
+    #!/usr/bin/env -S deno run
+
+    import * as cheerio from "npm:cheerio@1.0.0";
+
+    const html = `<html><body><h1>Welcome</h1><p class="info">This is a test.</p></body></html>`;
+    const $ = cheerio.load(html);
+    console.log($("p.info").text());
+    ```
+
+    ```bash
+    deno run scripts/extract.ts
+    ```
+
+    - 对 npm 包使用 `npm:`，对 Deno 原生包使用 `jsr:`。
+    - 版本说明符遵循 semver：`@1.0.0`（精确），`@^1.0.0`（兼容）。
+    - 依赖项全局缓存。使用 `--reload` 强制重新获取。
+    - 具有原生插件（node-gyp）的包可能无法工作——提供预构建二进制文件的包效果最好。
+  </Tab>
+  <Tab title="Bun">
+    当未找到 `node_modules` 目录时，Bun 在运行时自动安装缺少的包。直接在导入路径中固定版本：
+
+    ```typescript scripts/extract.ts
+    #!/usr/bin/env bun
+
+    import * as cheerio from "cheerio@1.0.0";
+
+    const html = `<html><body><h1>Welcome</h1><p class="info">This is a test.</p></body></html>`;
+    const $ = cheerio.load(html);
+    console.log($("p.info").text());
+    ```
+
+    ```bash
+    bun run scripts/extract.ts
+    ```
+
+    - 不需要 `package.json` 或 `node_modules`。TypeScript 原生工作。
+    - 包全局缓存。首次运行下载；后续运行几乎是即时的。
+    - 如果目录树中的任何位置存在 `node_modules` 目录，自动安装将被禁用，Bun 将回退到标准 Node.js 解析。
+  </Tab>
+  <Tab title="Ruby">
+    Bundler 自 2.6 以来随 Ruby 一起提供。使用 `bundler/inline` 直接在脚本中声明 gem：
+
+    ```ruby scripts/extract.rb
+    require 'bundler/inline'
+
+    gemfile do
+      source 'https://rubygems.org'
+      gem 'nokogiri'
+    end
+
+    html = '<html><body><h1>Welcome</h1><p class="info">This is a test.</p></body></html>'
+    doc = Nokogiri::HTML(html)
+    puts doc.at_css('p.info').text
+    ```
+
+    ```bash
+    ruby scripts/extract.rb
+    ```
+
+    - 明确固定版本（`gem 'nokogiri', '~> 1.16'`）——没有锁文件。
+    - 工作目录中的现有 `Gemfile` 或 `BUNDLE_GEMFILE` 环境变量可能会干扰。
+  </Tab>
+</Tabs>
+
+## 为智能体使用设计脚本
+
+当智能体运行你的脚本时，它读取 stdout 和 stderr 来决定下一步做什么。一些设计选择使脚本对智能体来说更容易使用。
+
+### 避免交互式提示
+
+这是智能体执行环境的硬性要求。智能体在非交互式 shell 中运行——它们无法响应 TTY 提示、密码对话框或确认菜单。阻塞交互式输入的脚本将无限期挂起。
+
+通过命令行标志、环境变量或 stdin 接受所有输入：
+
+```
+# 错误：等待输入挂起
+$ python scripts/deploy.py
+Target environment: _
+
+# 正确：带有指导的清晰错误
+$ python scripts/deploy.py
+Error: --env is required. Options: development, staging, production.
+Usage: python scripts/deploy.py --env staging --tag v1.2.3
+```
+
+### 使用 `--help` 记录用法
+
+`--help` 输出是智能体学习脚本接口的主要方式。包括简要描述、可用标志和用法示例：
+
+```
+Usage: scripts/process.py [OPTIONS] INPUT_FILE
+
+Process input data and produce a summary report.
+
+Options:
+  --format FORMAT    Output format: json, csv, table (default: json)
+  --output FILE      Write output to FILE instead of stdout
+  --verbose          Print progress to stderr
+
+Examples:
+  scripts/process.py data.csv
+  scripts/process.py --format csv --output report.csv data.csv
+```
+
+保持简洁——输出进入智能体的上下文窗口，与它正在处理的其他所有内容一起。
+
+### 编写有帮助的错误消息
+
+当智能体遇到错误时，消息直接影响其下一次尝试。不透明的"Error: invalid input"浪费了一轮。相反，说出什么出错了、期望什么以及要尝试什么：
+
+```
+Error: --format must be one of: json, csv, table.
+       Received: "xml"
+```
+
+### 使用结构化输出
+
+偏向结构化格式——JSON、CSV、TSV——而不是自由格式的文本。结构化格式可以被智能体和标准工具（`jq`、`cut`、`awk`）使用，使你的脚本在管道中可组合。
+
+```
+# 空格对齐——难以编程解析
+NAME          STATUS    CREATED
+my-service    running   2025-01-15
+
+# 分隔——明确的字段边界
+{"name": "my-service", "status": "running", "created": "2025-01-15"}
+```
+
+**将数据与诊断分开：**将结构化数据发送到 stdout，将进度消息、警告和其他诊断发送到 stderr。这让智能体可以捕获干净、可解析的输出，同时在需要时仍然可以访问诊断信息。
+
+### 进一步考虑
+
+- **幂等性。** 智能体可能会重试命令。"如果不存在则创建"比"创建并在重复时失败"更安全。
+- **输入约束。** 用清晰的错误拒绝模糊的输入，而不是猜测。尽可能使用枚举和封闭集。
+- **干运行支持。** 对于破坏性或有状态的操作，`--dry-run` 标志让智能体预览将发生什么。
+- **有意义的退出代码。** 对不同的失败类型使用不同的退出代码（未找到、无效参数、身份验证失败），并在 `--help` 输出中记录它们，以便智能体知道每个代码的含义。
+- **安全的默认值。** 考虑破坏性操作是否应该需要明确的确认标志（`--confirm`、`--force`）或其他适合风险级别的保障措施。
+- **可预测的输出大小。** 许多智能体利用自动截断超过阈值（例如，10-30K 字符）的工具输出，可能会丢失关键信息。如果你的脚本可能产生大量输出，默认为摘要或合理的限制，并支持像 `--offset` 这样的标志，以便智能体可以在需要时请求更多信息。或者，如果输出很大且不适合分页，要求智能体传递指定输出文件或 `-` 的 `--output` 标志，以明确选择加入 stdout。

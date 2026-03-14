@@ -1,0 +1,188 @@
+---
+title: "to_prompt"
+description: "生成代理提示 XML 的 Python 函数"
+---
+
+`to_prompt()` 函数生成用于代理系统提示的 `<available_skills>` XML 块。此格式是 Anthropic 为 Claude 模型推荐的格式。
+
+## 函数签名
+
+```python
+def to_prompt(skill_dirs: list[Path]) -> str
+```
+
+### 参数
+
+<ParamField path="skill_dirs" type="list[Path]" required>
+  技能目录路径的列表（`pathlib.Path` 对象）
+</ParamField>
+
+### 返回值
+
+<ResponseField name="返回值" type="str">
+  包含 `<available_skills>` 块的 XML 字符串，其中包含每个技能的名称、描述和位置
+</ResponseField>
+
+## 导入
+
+```python
+from pathlib import Path
+from skills_ref import to_prompt
+```
+
+## 输出格式
+
+生成的 XML 格式示例：
+
+```xml
+<available_skills>
+<skill>
+<name>pdf-reader</name>
+<description>Read and extract text from PDF files</description>
+<location>/path/to/pdf-reader/SKILL.md</location>
+</skill>
+</available_skills>
+```
+
+## 使用示例
+
+### 单个技能
+
+```python
+from pathlib import Path
+from skills_ref import to_prompt
+
+# 生成单个技能的提示
+prompt = to_prompt([Path("./pdf-reader")])
+print(prompt)
+```
+
+### 多个技能
+
+```python
+from pathlib import Path
+from skills_ref import to_prompt
+
+# 生成多个技能的提示
+skills = [
+    Path("./pdf-reader"),
+    Path("./web-scraper"),
+    Path("./data-analyzer")
+]
+
+prompt = to_prompt(skills)
+print(prompt)
+```
+
+### 嵌入到系统提示中
+
+```python
+from pathlib import Path
+from skills_ref import to_prompt
+
+# 生成可用技能 XML
+available_skills = to_prompt([
+    Path("./skill-a"),
+    Path("./skill-b")
+])
+
+# 构建完整的系统提示
+system_prompt = f"""
+You are an AI assistant with access to specialized skills.
+
+{available_skills}
+
+When a task requires a skill, use the skill tool to load the full instructions from the location specified.
+"""
+
+print(system_prompt)
+```
+
+### 动态发现技能
+
+```python
+from pathlib import Path
+from skills_ref import to_prompt, validate
+
+# 发现并验证所有技能
+skills_dir = Path("./skills")
+valid_skills = []
+
+for skill_path in skills_dir.iterdir():
+    if skill_path.is_dir():
+        errors = validate(skill_path)
+        if not errors:
+            valid_skills.append(skill_path)
+
+# 为所有有效技能生成提示
+if valid_skills:
+    prompt = to_prompt(valid_skills)
+    print(prompt)
+else:
+    print("未找到有效技能")
+```
+
+### 保存到文件
+
+```python
+from pathlib import Path
+from skills_ref import to_prompt
+
+skills = [Path("./skill-a"), Path("./skill-b")]
+prompt = to_prompt(skills)
+
+# 保存到文件
+with open("available_skills.xml", "w") as f:
+    f.write(prompt)
+```
+
+### 空技能列表
+
+```python
+from pathlib import Path
+from skills_ref import to_prompt
+
+# 空列表返回空的 XML 块
+prompt = to_prompt([])
+print(prompt)
+# 输出:
+# <available_skills>
+# </available_skills>
+```
+
+## 使用说明
+
+<Note>
+此函数生成的 XML 格式是 Anthropic 为 Claude 模型推荐的格式。技能客户端可以根据所使用的模型或偏好实现不同的格式化逻辑。
+</Note>
+
+### XML 转义
+
+函数自动对技能名称和描述进行 HTML/XML 转义，确保特殊字符（如 `<`、`>`、`&`）正确编码。
+
+### 位置路径
+
+`<location>` 元素包含 SKILL.md 文件的**绝对路径**。路径会自动解析为绝对路径。
+
+## 与 CLI 命令的关系
+
+CLI 命令 `skills-ref to-prompt` 内部调用此函数：
+
+```python
+# CLI 实现（简化版）
+from pathlib import Path
+from skills_ref import to_prompt
+
+skill_paths = [Path("./skill-a"), Path("./skill-b")]
+output = to_prompt(skill_paths)
+print(output)
+```
+
+## 相关函数
+
+- [read_properties()](/reference/api/read-properties) - 读取技能属性
+- [CLI: to-prompt](/reference/cli/to-prompt) - 命令行工具
+
+## 源代码位置
+
+`~/workspace/source/skills-ref/src/skills_ref/prompt.py:9`

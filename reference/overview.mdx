@@ -1,0 +1,109 @@
+---
+title: "概述"
+description: "skills-ref 是用于 Agent Skills 的参考库"
+---
+
+# skills-ref
+
+skills-ref 是用于 Agent Skills 的参考库。
+
+<Warning>
+本库仅用于演示目的，不适合在生产环境中使用。
+</Warning>
+
+## 什么是 skills-ref？
+
+skills-ref 提供了一套完整的工具来验证、解析和使用 Agent Skills。它包括：
+
+- **命令行工具**：用于验证技能、读取属性和生成代理提示
+- **Python API**：可编程访问技能验证和解析功能
+- **规范验证**：确保技能符合 Agent Skills 规范
+
+## 主要功能
+
+### 验证技能
+
+验证技能目录是否符合 Agent Skills 规范，包括：
+- SKILL.md 文件存在性检查
+- YAML frontmatter 格式验证
+- 必需字段（name、description）验证
+- 命名规范检查（小写、连字符格式）
+- 目录名称与技能名称匹配
+
+### 读取属性
+
+从 SKILL.md 的 YAML frontmatter 中提取技能属性：
+- 技能名称和描述
+- 许可证信息
+- 兼容性说明
+- 允许的工具模式
+- 自定义元数据
+
+### 生成代理提示
+
+生成适用于 Anthropic 模型的 `<available_skills>` XML 块，可直接嵌入代理系统提示中。
+
+## 使用方式
+
+### 命令行
+
+```bash
+# 验证技能
+skills-ref validate path/to/skill
+
+# 读取技能属性（输出 JSON）
+skills-ref read-properties path/to/skill
+
+# 生成代理提示的 XML
+skills-ref to-prompt path/to/skill-a path/to/skill-b
+```
+
+### Python API
+
+```python
+from pathlib import Path
+from skills_ref import validate, read_properties, to_prompt
+
+# 验证技能目录
+problems = validate(Path("my-skill"))
+if problems:
+    print("验证错误:", problems)
+
+# 读取技能属性
+props = read_properties(Path("my-skill"))
+print(f"技能: {props.name} - {props.description}")
+
+# 生成可用技能提示
+prompt = to_prompt([Path("skill-a"), Path("skill-b")])
+print(prompt)
+```
+
+## 安装
+
+查看[安装指南](/reference/installation)了解如何在不同平台上安装 skills-ref。
+
+## 代理提示集成
+
+使用 `to-prompt` 命令为代理的系统提示生成建议的 `<available_skills>` XML 块。此格式推荐用于 Anthropic 的模型，但技能客户端可以根据所使用的模型选择不同的格式。
+
+```xml
+<available_skills>
+<skill>
+<name>
+my-skill
+</name>
+<description>
+此技能的功能和使用时机
+</description>
+<location>
+/path/to/my-skill/SKILL.md
+</location>
+</skill>
+</available_skills>
+```
+
+`<location>` 元素告诉代理在哪里可以找到完整的技能说明。
+
+## 许可证
+
+Apache 2.0

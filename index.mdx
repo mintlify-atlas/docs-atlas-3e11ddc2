@@ -1,97 +1,125 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "Agent Skills 中文文档"
+description: "为 AI 代理提供新能力和专业知识的简单、开放格式规范"
 ---
 
-## Setting up
+<div className="bg-[#FFFFFF] dark:bg-gray-900 rounded-lg p-8 mb-8">
+  <div className="flex items-center gap-4 mb-6">
+    <img src="https://media.brand.dev/3909aec7-09de-4302-b812-d087be037759.png" alt="Agent Skills" className="h-16 w-16" />
+    <div>
+      <h1 className="text-4xl font-bold text-[#111827] dark:text-white mb-2">Agent Skills</h1>
+      <p className="text-xl text-[#6B7280] dark:text-gray-400">为 AI 代理提供新能力和专业知识的简单、开放格式</p>
+    </div>
+  </div>
+</div>
 
-Get your documentation site up and running in minutes.
+Agent Skills 是由指令、脚本和资源组成的文件夹，代理可以发现并使用它们来更准确、更高效地完成任务。
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
+## 为什么使用 Agent Skills？
 
-## Make it yours
+代理的能力越来越强，但往往缺乏可靠完成实际工作所需的上下文。Skills 通过让代理按需加载程序性知识以及公司、团队和用户特定的上下文来解决这个问题。拥有一组技能的代理可以根据正在处理的任务扩展其能力。
 
-Design a docs site that looks great and empowers your users.
+<CardGroup cols={3}>
+  <Card title="技能创作者" icon="pencil">
+    一次构建能力，跨多个代理产品部署
+  </Card>
+  <Card title="兼容代理" icon="robot">
+    支持技能让最终用户能够开箱即用地赋予代理新能力
+  </Card>
+  <Card title="团队和企业" icon="users">
+    在可移植、版本控制的包中捕获组织知识
+  </Card>
+</CardGroup>
 
-<Columns cols={2}>
+## Agent Skills 能实现什么？
+
+<CardGroup cols={2}>
+  <Card title="领域专业知识" icon="graduation-cap">
+    将专业知识打包成可重复使用的指令，从法律审查流程到数据分析管道
+  </Card>
+  <Card title="新能力" icon="wand-magic-sparkles">
+    赋予代理新能力（例如创建演示文稿、构建 MCP 服务器、分析数据集）
+  </Card>
+  <Card title="可重复的工作流程" icon="rotate">
+    将多步骤任务转化为一致且可审计的工作流程
+  </Card>
+  <Card title="互操作性" icon="arrows-left-right">
+    在不同的兼容技能的代理产品中重用相同的技能
+  </Card>
+</CardGroup>
+
+## 采用情况
+
+Agent Skills 得到了领先 AI 开发工具的支持，包括 Anthropic Claude、Cursor、VSCode 等平台。
+
+## 开放开发
+
+Agent Skills 格式最初由 [Anthropic](https://www.anthropic.com/) 开发，作为开放标准发布，并已被越来越多的代理产品采用。该标准对来自更广泛生态系统的贡献开放。
+
+[在 GitHub 上查看](https://github.com/devaige/agentskills-cn)
+
+## 快速开始
+
+<CardGroup cols={3}>
   <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
+    title="什么是技能？"
+    icon="lightbulb"
+    href="/what-are-skills"
   >
-    Edit your docs locally and preview them in real time.
+    了解技能、它们如何工作以及为什么重要
   </Card>
   <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
+    title="规范文档"
+    icon="file-code"
+    href="/specification"
   >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+    SKILL.md 文件的完整格式规范
   </Card>
   <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
+    title="添加技能支持"
+    icon="gear"
+    href="/client-implementation/adding-skills-support"
   >
-    Auto-generate API documentation from OpenAPI specifications.
+    向您的代理或工具添加技能支持
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
-
-Everything you need to create world-class documentation.
-
-<Columns cols={2}>
+<CardGroup cols={2}>
   <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
+    title="示例技能"
     icon="code"
-    href="/essentials/code"
+    href="https://github.com/anthropics/skills"
   >
-    Add sample code to demonstrate how to use your product.
+    在 GitHub 上浏览示例技能
   </Card>
   <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
+    title="参考库"
+    icon="wrench"
+    href="/reference/overview"
   >
-    Display images and other media.
+    验证技能并生成提示 XML
   </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+</CardGroup>
 
-## Need inspiration?
+## 主要特性
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<AccordionGroup>
+  <Accordion title="SKILL.md 格式规范">
+    完整的 YAML 前置数据和 Markdown 内容规范，包括 `name`、`description`、`license`、`compatibility` 等字段
+  </Accordion>
+  <Accordion title="目录结构指南">
+    清晰的目录结构指南，包括 `scripts/`、`references/` 和 `assets/` 目录的使用规范
+  </Accordion>
+  <Accordion title="渐进式披露">
+    高效利用上下文的三层结构：元数据（约 100 tokens）、指令（建议 < 5000 tokens）、资源（按需加载）
+  </Accordion>
+  <Accordion title="验证工具">
+    使用 `skills-ref` 库检查技能文件格式和命名规范，确保符合 Agent Skills 规范
+  </Accordion>
+  <Accordion title="Python CLI 工具">
+    提供 `validate`、`read-properties` 和 `to-prompt` 命令，用于验证、读取属性和生成代理提示
+  </Accordion>
+  <Accordion title="提示生成">
+    自动为代理生成标准的 `<available_skills>` XML 格式，便于集成到代理系统提示中
+  </Accordion>
+</AccordionGroup>

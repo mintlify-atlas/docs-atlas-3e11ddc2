@@ -1,0 +1,125 @@
+---
+title: "read-properties"
+description: "读取技能属性并输出为 JSON"
+---
+
+`read-properties` 命令从 SKILL.md 的 YAML frontmatter 中解析并打印技能属性，输出格式为 JSON。
+
+## 用法
+
+```bash
+skills-ref read-properties <skill_path>
+```
+
+### 参数
+
+<ParamField path="skill_path" type="Path" required>
+  技能目录的路径。也可以直接指向 SKILL.md 文件。
+</ParamField>
+
+## 退出码
+
+<ResponseField name="0" type="int">
+  成功读取属性
+</ResponseField>
+
+<ResponseField name="1" type="int">
+  解析错误（例如：缺少 SKILL.md 或无效的 YAML）
+</ResponseField>
+
+## 输出格式
+
+命令输出一个包含技能属性的 JSON 对象：
+
+```json
+{
+  "name": "技能名称",
+  "description": "技能描述",
+  "license": "MIT",
+  "compatibility": "兼容性说明",
+  "allowed-tools": "工具模式",
+  "metadata": {
+    "key1": "value1",
+    "key2": "value2"
+  }
+}
+```
+
+### 字段说明
+
+<ResponseField name="name" type="string" required>
+  技能名称（kebab-case 格式）
+</ResponseField>
+
+<ResponseField name="description" type="string" required>
+  技能的功能描述和使用时机
+</ResponseField>
+
+<ResponseField name="license" type="string">
+  技能的许可证（可选）
+</ResponseField>
+
+<ResponseField name="compatibility" type="string">
+  技能的兼容性信息（可选）
+</ResponseField>
+
+<ResponseField name="allowed-tools" type="string">
+  技能需要的工具模式（可选，实验性功能）
+</ResponseField>
+
+<ResponseField name="metadata" type="object">
+  客户端特定属性的键值对（可选，为空时不输出）
+</ResponseField>
+
+## 示例
+
+### 读取基本技能属性
+
+```bash
+$ skills-ref read-properties ./pdf-reader
+{
+  "name": "pdf-reader",
+  "description": "Read and extract text from PDF files",
+  "license": "Apache-2.0"
+}
+```
+
+### 带元数据的技能
+
+```bash
+$ skills-ref read-properties ./advanced-skill
+{
+  "name": "advanced-skill",
+  "description": "An advanced skill with custom metadata",
+  "license": "MIT",
+  "compatibility": "Requires Python 3.8+",
+  "metadata": {
+    "author": "Jane Doe",
+    "version": "1.0.0"
+  }
+}
+```
+
+### 使用管道处理输出
+
+```bash
+# 使用 jq 提取特定字段
+$ skills-ref read-properties ./my-skill | jq '.name'
+"my-skill"
+
+# 检查是否设置了许可证
+$ skills-ref read-properties ./my-skill | jq 'has("license")'
+true
+```
+
+### 错误处理
+
+```bash
+$ skills-ref read-properties ./invalid-skill
+Error: SKILL.md not found in ./invalid-skill
+```
+
+## 相关命令
+
+- [validate](/reference/cli/validate) - 验证技能目录
+- [Python API: read_properties()](/reference/api/read-properties) - 编程方式读取属性

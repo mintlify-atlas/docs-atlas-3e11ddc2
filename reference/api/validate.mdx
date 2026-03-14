@@ -1,0 +1,154 @@
+---
+title: "validate"
+description: "验证技能目录的 Python 函数"
+---
+
+`validate()` 函数验证技能目录是否符合 Agent Skills 规范。
+
+## 函数签名
+
+```python
+def validate(skill_dir: Path) -> list[str]
+```
+
+### 参数
+
+<ParamField path="skill_dir" type="Path" required>
+  技能目录的路径（`pathlib.Path` 对象）
+</ParamField>
+
+### 返回值
+
+<ResponseField name="返回值" type="list[str]">
+  验证错误消息列表。空列表表示技能有效。
+</ResponseField>
+
+## 导入
+
+```python
+from pathlib import Path
+from skills_ref import validate
+```
+
+## 验证检查
+
+该函数执行以下验证：
+
+1. **路径检查**：验证路径存在且为目录
+2. **文件存在性**：检查 SKILL.md（或 skill.md）是否存在
+3. **YAML 解析**：验证 frontmatter 是否为有效的 YAML
+4. **必需字段**：确保存在 `name` 和 `description`
+5. **名称格式**：
+   - 小写字母
+   - 仅允许字母、数字和连字符
+   - 不以连字符开始或结束
+   - 长度不超过 64 个字符
+6. **目录匹配**：目录名称必须与技能名称匹配
+7. **字段验证**：检查字段长度和允许的字段名称
+
+## 使用示例
+
+### 基本验证
+
+```python
+from pathlib import Path
+from skills_ref import validate
+
+# 验证技能目录
+problems = validate(Path("my-skill"))
+
+if problems:
+    print("验证失败:")
+    for error in problems:
+        print(f"  - {error}")
+else:
+    print("技能有效!")
+```
+
+### 批量验证多个技能
+
+```python
+from pathlib import Path
+from skills_ref import validate
+
+skills_dir = Path("./skills")
+all_skills = [d for d in skills_dir.iterdir() if d.is_dir()]
+
+for skill_dir in all_skills:
+    errors = validate(skill_dir)
+    if errors:
+        print(f"❌ {skill_dir.name}:")
+        for error in errors:
+            print(f"   {error}")
+    else:
+        print(f"✓ {skill_dir.name}")
+```
+
+### 在 CI/CD 中使用
+
+```python
+import sys
+from pathlib import Path
+from skills_ref import validate
+
+def main():
+    skill_path = Path("./my-skill")
+    errors = validate(skill_path)
+    
+    if errors:
+        print(f"技能验证失败: {skill_path}", file=sys.stderr)
+        for error in errors:
+            print(f"  - {error}", file=sys.stderr)
+        sys.exit(1)
+    
+    print(f"技能验证成功: {skill_path}")
+    sys.exit(0)
+
+if __name__ == "__main__":
+    main()
+```
+
+### 结合读取属性
+
+```python
+from pathlib import Path
+from skills_ref import validate, read_properties
+
+skill_dir = Path("./pdf-reader")
+
+# 先验证
+errors = validate(skill_dir)
+if errors:
+    print("验证错误:", errors)
+    exit(1)
+
+# 验证通过后读取属性
+props = read_properties(skill_dir)
+print(f"技能: {props.name}")
+print(f"描述: {props.description}")
+```
+
+## 错误示例
+
+```python
+from pathlib import Path
+from skills_ref import validate
+
+errors = validate(Path("./invalid-skill"))
+print(errors)
+# 输出:
+# [
+#   "Missing required field in frontmatter: name",
+#   "Description exceeds 1024 character limit (1250 chars)",
+#   "Skill name 'My-Skill' must be lowercase"
+# ]
+```
+
+## 相关函数
+
+- [read_properties()](/reference/api/read-properties) - 读取技能属性
+- [CLI: validate](/reference/cli/validate) - 命令行验证工具
+
+## 源代码位置
+
+`~/workspace/source/skills-ref/src/skills_ref/validator.py:150`

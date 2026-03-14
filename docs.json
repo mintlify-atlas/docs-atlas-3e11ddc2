@@ -1,122 +1,78 @@
 {
   "$schema": "https://mintlify.com/docs.json",
+  "name": "Agent Skills",
   "theme": "mint",
-  "name": "Mint Starter Kit",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#7c7c7c",
+    "light": "#050505",
+    "dark": "#bdbdbd"
   },
-  "favicon": "/favicon.svg",
+
+  "logo": {
+    "light": "https://media.brand.dev/3909aec7-09de-4302-b812-d087be037759.png",
+    "dark": "https://media.brand.dev/3909aec7-09de-4302-b812-d087be037759.png"
+  },
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/devaige/agentskills-cn"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/devaige/agentskills-cn"
+    }
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "文档",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "开始使用",
+            "pages": ["introduction", "what-are-skills", "specification"]
+          },
+          {
+            "group": "技能创作",
             "pages": [
-              "index",
-              "quickstart",
-              "development"
+              "skill-creation/best-practices",
+              "skill-creation/optimizing-descriptions",
+              "skill-creation/evaluating-skills",
+              "skill-creation/using-scripts"
             ]
           },
           {
-            "group": "Customization",
-            "pages": [
-              "essentials/settings",
-              "essentials/navigation"
-            ]
-          },
-          {
-            "group": "Writing content",
-            "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
-            ]
-          },
-          {
-            "group": "AI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
-            ]
+            "group": "客户端实现",
+            "pages": ["client-implementation/adding-skills-support"]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "参考库",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "开始使用",
+            "pages": ["reference/overview", "reference/installation"]
+          },
+          {
+            "group": "CLI 命令",
             "pages": [
-              "api-reference/introduction"
+              "reference/cli/validate",
+              "reference/cli/read-properties",
+              "reference/cli/to-prompt"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Python API",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "reference/api/validate",
+              "reference/api/read-properties",
+              "reference/api/to-prompt",
+              "reference/api/models"
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+    ]
   }
 }

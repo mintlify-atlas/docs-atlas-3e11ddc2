@@ -1,0 +1,94 @@
+---
+title: "什么是技能？"
+description: "智能体技能是一种轻量级、开放的格式，用于通过专业知识和工作流扩展 AI 智能体的能力。"
+---
+
+从本质上讲，一个技能就是一个包含 `SKILL.md` 文件的文件夹。该文件包括元数据（至少包含 `name` 和 `description`）和告诉智能体如何执行特定任务的指令。技能还可以捆绑脚本、模板和参考资料。
+
+```directory
+my-skill/
+├── SKILL.md          # 必需：指令 + 元数据
+├── scripts/          # 可选：可执行代码
+├── references/       # 可选：文档
+└── assets/           # 可选：模板、资源
+```
+
+## 技能如何工作
+
+技能使用**渐进式披露**来高效管理上下文：
+
+<Steps>
+  <Step title="发现">
+    在启动时，智能体仅加载每个可用技能的名称和描述，这些信息足以了解何时可能需要该技能。
+  </Step>
+  
+  <Step title="激活">
+    当任务与技能的描述匹配时，智能体会将完整的 `SKILL.md` 指令读入上下文。
+  </Step>
+  
+  <Step title="执行">
+    智能体遵循指令，根据需要加载引用的文件或执行捆绑的代码。
+  </Step>
+</Steps>
+
+这种方法使智能体保持快速响应，同时能够按需访问更多上下文。
+
+## SKILL.md 文件
+
+每个技能都以包含 YAML 前置元数据和 Markdown 指令的 `SKILL.md` 文件开始：
+
+```markdown SKILL.md
+---
+name: pdf-processing
+description: 提取 PDF 文本、填写表单、合并文件。在处理 PDF 时使用。
+---
+
+# PDF 处理
+
+## 何时使用此技能
+当用户需要处理 PDF 文件时使用此技能...
+
+## 如何提取文本
+1. 使用 pdfplumber 提取文本...
+
+## 如何填写表单
+...
+```
+
+在 `SKILL.md` 顶部需要以下前置元数据：
+
+- `name`：简短标识符
+- `description`：何时使用此技能
+
+Markdown 正文包含实际指令，对结构或内容没有特定限制。
+
+这种简单的格式有一些关键优势：
+
+<Accordion title="自文档化">
+  技能作者或用户可以阅读 `SKILL.md` 并理解它的作用，使技能易于审计和改进。
+</Accordion>
+
+<Accordion title="可扩展">
+  技能的复杂程度可以从纯文本指令到可执行代码、资源和模板不等。
+</Accordion>
+
+<Accordion title="可移植">
+  技能只是文件，因此易于编辑、版本控制和共享。
+</Accordion>
+
+## 下一步
+
+<CardGroup cols={2}>
+  <Card title="查看规范" icon="file-lines" href="/specification">
+    了解完整的格式规范。
+  </Card>
+  <Card title="添加技能支持" icon="plus" href="/client-implementation/adding-skills-support">
+    为您的智能体添加技能支持以构建兼容客户端。
+  </Card>
+  <Card title="示例技能" icon="github" href="https://github.com/anthropics/skills">
+    在 GitHub 上查看示例技能。
+  </Card>
+  <Card title="最佳实践" icon="star" href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices">
+    阅读编写有效技能的最佳实践。
+  </Card>
+</CardGroup>
